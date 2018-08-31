@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Корзина магазина на Vue</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+	<style>
+		div.cart {
+			margin-top: 50px;
+		}
+		input.quantity {
+			width: 20%;
+			float: left;
+			margin-right: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container cart" id="app">
+<!-- 		<span v-if="status">Оформлен</span>
+		<button @click = "status = !status">Click</button>
+		<br>
+		{{foo}}
+		<input type="text" v-model="foo">
+		<div v-for="product in products">{{product.title}} {{product.price}} {{product.quantity}}</div> -->
+		<div class="row">
+			<div class="col-md-8">
+				<h1>Корзина</h1>
+				<table class="table">
+					<thead>
+						<th>#</th>
+						<th>Название</th>
+						<th>Цена</th>
+						<th>Количество</th>
+						<th>Действие</th>
+					</thead>
+					<tbody>
+						<tr v-for="(product, index) in products">
+							<td>{{index+1}}</td>
+							<td>{{product.title}}</td>
+							<td>{{product.price}}$</td>
+							<td>{{product.quantity}}</td>
+							<td>
+								<input type="number" class="form-control quantity" v-model.number="product.quantity">
+								<button class="btn btn-danger" @click="deleteProduct(product)">Удалить</button>
+							</td>
+						</tr>
+
+					</tbody>
+				</table>
+			</div>
+			<div class="col-md-4">
+				<h1>Новый товар</h1>
+				<div class="form-group">
+					<label for="">Название товара</label>
+					<input type="text" class="form-control" v-model="product.title">
+				</div>
+				<div class="form-group">
+					<label for="">Цена</label>
+					<input type="text" class="form-control" v-model.number="product.price">
+				</div>
+				<div class="form-group">
+					<button class="btn btn-success" @click="addProduct()" v-if="buttonStatus">Добавить</button>
+				</div>
+			</div>
+		</div>
+		<h1>Количество товаров: {{totalQuantity}}</h1>
+		<h1>Общая стоимость: {{totalPrice}}$</h1>
+		<span class="alert alert-success" v-if="status">Заказ оформлен</span>
+		<button class="btn btn-warning" @click="addOrder()" v-if="!status">Оформить заказ</button>
+	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/reqwest/2.0.5/reqwest.js"></script>
+	<script>
+		const app = new Vue({
+			el: '#app',
+			data: {
+				status: false,
+				foo: 'Bar',
+				products: [],
+				product: {
+					title: null,
+					price: null,
+					quantity: null
+				},
+				order: {
+					customer_name: null
+				}
+			},
+			methods: {
+				show_alert() {
+					alert('12132424');
+				},
+				makeOrder() {
+					this.status = true;
+				},
+				deleteProduct(product) {
+					this.products.splice(this.products.indexOf(product), 1);
+					reqwest({
+					    url: '/deleteProduct.php'
+					  , method: 'post'
+					  , data: { productId: product.id }
+					  , success: function (resp) {
+					    }
+					})
+				},
+
+				addProduct() {
+					var newProduct = {
+						title: this.product.title,
+						price: this.product.price,
+						quantity: 1
+					};
+					this.products.push(newProduct);
+					this.product.title = null;
+					this.product.price = null;
+
+					reqwest({
+					    url: '/addProduct.php'
+					  , method: 'post'
+					  , data: { product: newProduct }
+					  , success: function (resp) {
+					    }
+					})
+
+				},
+
+				addOrder() {
+					var newOrder = {
+						customer_name: 'Customer_' + Math.random().toString(36).substr(2, 16)
+					};
+					 // this.order.customer_name = 'Customer' + Math.random().toString(36).substr(2, 16);
+					// this.products.push(newProduct);
+					// this.product.title = null;
+					// this.product.price = null;
+
+					reqwest({
+					    url: '/addOrder.php'
+					  , method: 'post'
+					  , data: { order: newOrder, products: this.products }
+					  , success: function (resp) {
+					    }
+					});
+
+					this.status = true;
+				}
+			},
+			mounted() {
+				const vm = this;
+				reqwest('/products.php', function (resp) {
+	  				vm.products = JSON.parse(resp);
+				})
+			},
+			computed: {
+				totalQuantity() {
+					// var total = 0;
+					// this.products.forEach((product) => {
+					// 	total = total + product.quantity;
+					// });
+					// console.log(total);
+
+					return this.products.reduce((sum, product) => {
+						return sum + parseInt(product.quantity);
+					}, 0);
+				},
+
+				totalPrice() {
+					return this.products.reduce((sum, product) => {
+						return sum + product.price * product.quantity;
+					}, 0);
+				},
+				buttonStatus() {
+					if (this.product.title != null && this.product.price != null) return true;
+				}
+
+			}
+		});
+	</script>
+</body>
+</html>

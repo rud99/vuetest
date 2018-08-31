@@ -1,0 +1,26 @@
+[
+	{
+		"id": 1,
+		"title": "Шорты",
+		"price": 25,
+		"quantity": 12
+	},
+	{
+		"id": 2,
+		"title": "Майка",
+		"price": 20,
+		"quantity": 85
+	},
+	{
+		"id": 3,
+		"title": "Ремень",
+		"price": 2,
+		"quantity": 120
+	},
+	{
+		"id": 4,
+		"title": "Панама",
+		"price": 21,
+		"quantity": 11
+	}
+]
